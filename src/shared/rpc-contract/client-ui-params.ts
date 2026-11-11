@@ -131,7 +131,7 @@ export const UiUpdateFields = z
     sidebarOpen: z.boolean().optional(),
     rightSidebarOpen: z.boolean().optional(),
     rightSidebarTab: RightSidebarTabParam.optional(),
-    rightSidebarExplorerView: z.enum(['files', 'search']).optional(),
+    rightSidebarExplorerView: z.enum(['files', 'search', 'symbols']).optional(),
     rightSidebarWidth: z.number().finite().optional(),
     markdownTocPanelWidth: z.number().finite().optional(),
     combinedDiffFileTreeWidth: z.number().finite().optional(),

@@ -10,7 +10,7 @@ export type RightSidebarRoute = {
 }
 
 function normalizeRightSidebarExplorerView(view: unknown): RightSidebarExplorerView {
-  return view === 'search' ? 'search' : 'files'
+  return view === 'search' || view === 'symbols' ? view : 'files'
 }
 
 export type NormalizeRightSidebarRouteOptions = {

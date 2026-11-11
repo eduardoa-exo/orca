@@ -29,6 +29,7 @@ import { installMonacoDiffEditorDisposalGuard } from './monaco-diff-editor-dispo
 import { installMonacoDiffViewportTokenization } from './monaco-diff-viewport-tokenization'
 import { installMonacoPeekReferencesPreviewOptions } from './monaco-peek-preview-options'
 import { installMonacoContextMenuPaste } from '@/components/editor/install-monaco-context-menu-paste'
+import { registerCodeImportLinks } from '@/components/editor/code-import-links/monaco-code-import-links'
 import { runMonacoSetupSteps } from './monaco-setup-steps'
 import { installMonacoTsWorkerIdleStop } from './monaco-ts-worker-idle-stop'
 import { onPluginFontLoadsChanged } from '@/store/plugins/appearance/plugin-fonts'
@@ -97,6 +98,7 @@ runMonacoSetupSteps([
   ['peek references preview options', installMonacoPeekReferencesPreviewOptions],
   // Sandboxed navigator.clipboard blocks Monaco Paste; use trusted IPC as native Cmd+V does.
   ['context-menu paste', () => installMonacoContextMenuPaste(monaco)],
+  ['code import links', () => registerCodeImportLinks(monaco)],
   ['TS worker idle stop', () => installMonacoTsWorkerIdleStop(monaco)],
   // Monaco caches glyph widths, so a plugin font that loads after first paint must re-measure.
   ['plugin font remeasure', () => onPluginFontLoadsChanged(() => monaco.editor.remeasureFonts())]

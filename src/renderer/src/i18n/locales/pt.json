@@ -22120,6 +22120,18 @@
       "titleTrash": "Não foi possível mover '{{name}}' para a Lixeira. Excluir permanentemente?",
       "description": "Isso não pode ser desfeito.",
       "confirm": "Excluir permanentemente"
+    },
+    "symbols": {
+      "viewLabel": "Símbolos",
+      "viewAriaLabel": "Navegar pelos símbolos do código",
+      "searchWorkspace": "Buscar símbolos no espaço de trabalho",
+      "clearSearch": "Limpar busca de símbolos",
+      "invalidQuery": "Use letras, números, sublinhados ou pontos para buscar símbolos.",
+      "noResults": "Nenhum símbolo correspondente em arquivos Python ou XML.",
+      "noFile": "Abra um arquivo para ver sua estrutura ou digite para buscar no espaço de trabalho.",
+      "unsupported": "A estrutura está disponível para arquivos Python e XML. Digite para buscar no espaço de trabalho.",
+      "emptyOutline": "Nenhum símbolo neste arquivo.",
+      "truncated": "Resultados truncados. Refine sua busca."
     }
   },
   "sparsePreset": {

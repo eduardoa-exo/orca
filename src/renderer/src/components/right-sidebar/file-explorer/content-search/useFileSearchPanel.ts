@@ -13,6 +13,7 @@ import { cancelRevealFrame, openMatchResult } from './search-match-open'
 import type { SearchQueryRowProps } from './SearchQueryRow'
 import type { SearchFiltersProps } from './SearchFilters'
 import { useFileSearchRunner } from './useFileSearchRunner'
+import type { RightSidebarExplorerView } from '../../../../../../shared/ui-chrome-types'
 
 const EMPTY_COLLAPSED_FILES = new Set<string>()
 
@@ -34,7 +35,7 @@ export type FileSearchPanelModel = {
   focusQueryInput: () => void
 }
 
-export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearchPanelModel {
+export function useFileSearchPanel(explorerView: RightSidebarExplorerView): FileSearchPanelModel {
   const activeWorktree = useActiveWorktree()
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const openFile = useAppStore((s) => s.openFile)
