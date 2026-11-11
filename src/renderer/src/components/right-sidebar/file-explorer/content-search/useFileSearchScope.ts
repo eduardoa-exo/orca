@@ -8,6 +8,7 @@ import {
   isFileSearchResultOwnerCurrent,
   type FileSearchResultOwner
 } from '@/lib/files/search/file-search-result-owner'
+import type { RightSidebarExplorerView } from '../../../../../../shared/ui-chrome-types'
 
 export function useFileSearchScope({
   activeWorktreeId,
@@ -19,7 +20,7 @@ export function useFileSearchScope({
 }: {
   activeWorktreeId: string | null
   worktreePath: string | null
-  explorerView: 'files' | 'search'
+  explorerView: RightSidebarExplorerView
   executeSearch: (query: string) => void
   cancelPendingSearch: () => void
   updateActiveSearchState: (updates: { results: null; resultOwner: null; error: null }) => void

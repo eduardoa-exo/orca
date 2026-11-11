@@ -35,6 +35,11 @@ export function FileExplorerViewSwitch({
         'auto.components.right.sidebar.FileExplorerToolbar.c1f3f3ec70',
         'Search file contents'
       )
+    },
+    {
+      view: 'symbols',
+      label: t('fileExplorer.symbols.viewLabel', 'Symbols'),
+      ariaLabel: t('fileExplorer.symbols.viewAriaLabel', 'Browse code symbols')
     }
   ]
 
@@ -47,7 +52,7 @@ export function FileExplorerViewSwitch({
         spacing={1}
         value={view}
         onValueChange={(value) => {
-          if (value === 'files' || value === 'search') {
+          if (value === 'files' || value === 'search' || value === 'symbols') {
             onSelectView(value)
           }
         }}

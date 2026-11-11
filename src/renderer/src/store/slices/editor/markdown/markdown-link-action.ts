@@ -3,15 +3,14 @@ import type { EditorSlice } from '../types/editor-slice'
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { detectLanguage } from '../../../../../../shared/editor-language/editor-language-detect'
-import { openHttpLink, type HttpLinkSourceOwner } from '@/lib/browser/navigation/http-link-routing'
-import { getConnectionIdForFileFromState } from '@/lib/workspace/ownership/connection-owner-resolution'
+import { openHttpLink } from '@/lib/browser/navigation/http-link-routing'
+import { resolveLinkSourceFileContext } from '@/lib/files/access/link-source-file-context'
 import {
   isLocalPathOpenBlocked,
   showLocalPathOpenBlockedToast
 } from '@/lib/files/os-open/local-path-open-guard'
 import { getLinkSourceLocalOpenOwner } from '@/lib/link-source-local-open-owner'
 import { resolveMarkdownLinkTarget } from '@/components/editor/markdown/link-routing/markdown-internal-links'
-import { runtimeTargetForOwnerEnvironment } from '@/runtime/rpc/targets/runtime-client-target'
 import { statRuntimePath } from '@/runtime/files/metadata/runtime-file-metadata-client'
 import { getOpenedEditFileIdAfterOpen } from '../file-ids/editor-file-ids'
 import { scheduleEditorLineReveal } from '../focus/editor-focus-reveal'
@@ -23,53 +22,11 @@ export function createMarkdownLinkAction(
   return {
     activateMarkdownLink: async (rawHref, ctx) => {
       const initialState = get()
-      let inferredRuntimeEnvironmentId: string | null | undefined
-      if (!ctx.sourceOwner && ctx.runtimeEnvironmentId === undefined) {
-        const inferredRuntimeOwners = new Set(
-          initialState.openFiles
-            .filter(
-              (file) => file.filePath === ctx.sourceFilePath && file.worktreeId === ctx.worktreeId
-            )
-            .map((file) => file.runtimeEnvironmentId?.trim() || null)
-        )
-        if (inferredRuntimeOwners.size > 1) {
-          return
-        }
-        inferredRuntimeEnvironmentId =
-          inferredRuntimeOwners.size === 1 ? [...inferredRuntimeOwners][0] : undefined
-      }
-      const sourceRuntimeEnvironmentId =
-        ctx.sourceOwner?.kind === 'runtime'
-          ? ctx.sourceOwner.runtimeEnvironmentId
-          : ctx.sourceOwner
-            ? null
-            : ctx.runtimeEnvironmentId !== undefined
-              ? ctx.runtimeEnvironmentId
-              : inferredRuntimeEnvironmentId
-      const runtimeOwnerId = sourceRuntimeEnvironmentId?.trim() || null
-      const resolvedConnectionId =
-        ctx.sourceOwner || runtimeOwnerId
-          ? undefined
-          : getConnectionIdForFileFromState(initialState, ctx.worktreeId, ctx.sourceFilePath)
-      const sourceOwner: HttpLinkSourceOwner =
-        ctx.sourceOwner ??
-        (runtimeOwnerId
-          ? { kind: 'runtime', runtimeEnvironmentId: runtimeOwnerId }
-          : resolvedConnectionId === undefined
-            ? { kind: 'unknown' }
-            : resolvedConnectionId === null
-              ? { kind: 'local' }
-              : { kind: 'ssh', connectionId: resolvedConnectionId })
-      if (sourceOwner.kind === 'unknown') {
+      const source = resolveLinkSourceFileContext(initialState, ctx)
+      if (!source) {
         return
       }
-      const sourceConnectionId = sourceOwner.kind === 'ssh' ? sourceOwner.connectionId : undefined
-      const fileContext = {
-        target: runtimeTargetForOwnerEnvironment(runtimeOwnerId),
-        worktreeId: ctx.worktreeId,
-        worktreePath: ctx.worktreeRoot,
-        connectionId: sourceConnectionId
-      }
+      const { sourceOwner, sourceRuntimeEnvironmentId, fileContext } = source
       const target = resolveMarkdownLinkTarget(rawHref, ctx.sourceFilePath, ctx.worktreeRoot)
       if (!target) {
         return

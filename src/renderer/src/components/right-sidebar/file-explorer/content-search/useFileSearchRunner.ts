@@ -1,24 +1,19 @@
 import { readIpcErrorDetail } from '@/runtime/errors/ipc-error'
 import { translate } from '@/i18n/i18n'
 import { useCallback, useEffect, useRef } from 'react'
-import { getConnectionId } from '@/lib/workspace/ownership/connection-context'
-import {
-  createFileSearchResultOwner,
-  type FileSearchResultOwner
-} from '@/lib/files/search/file-search-result-owner'
+import type { FileSearchResultOwner } from '@/lib/files/search/file-search-result-owner'
 import {
   createEmptyRuntimeFileSearchResult,
   getRuntimeFileSearchRejectedField
 } from '@/runtime/files/search/runtime-file-search-bounds'
 import { searchRuntimeFiles } from '@/runtime/files/search/runtime-file-search-client'
 import { useAppStore } from '@/store/index'
-import {
-  getExecutionHostIdForWorktree,
-  runtimeEnvironmentIdOrLocalUnlessTwin
-} from '@/lib/workspace/ownership/worktree-runtime-owner'
-import { isTwinWorkspace } from '@/lib/workspace/ownership/resolve-owner'
 import type { SearchResult } from '../../../../../../shared/file-search/code-search-types'
-import { runtimeTargetForOwnerEnvironment } from '@/runtime/rpc/targets/runtime-client-target'
+import {
+  createRuntimeFileSearchResultOwner,
+  runtimeFileSearchTarget,
+  useRuntimeFileSearchRoute
+} from './use-runtime-file-search-route'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SEARCH_MAX_RESULTS = 2000
@@ -44,14 +39,8 @@ export function useFileSearchRunner({
   executeSearch: (query: string) => void
   cancelPendingSearch: () => void
 } {
-  const runtimeEnvironmentId = useAppStore((state) =>
-    runtimeEnvironmentIdOrLocalUnlessTwin(state, activeWorktreeId)
-  )
-  const executionHostId = useAppStore((state) =>
-    getExecutionHostIdForWorktree(state, activeWorktreeId)
-  )
-  // Why: a workspace two hosts publish names no owner, so either host's results would mislead.
-  const ownerIsTwin = useAppStore((state) => isTwinWorkspace(state, activeWorktreeId))
+  const route = useRuntimeFileSearchRoute(activeWorktreeId)
+  const { runtimeEnvironmentId, executionHostId, ownerIsTwin } = route
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Reject out-of-order completions so old searches cannot overwrite newer queries.
   const latestSearchIdRef = useRef(0)
@@ -100,10 +89,7 @@ export function useFileSearchRunner({
       ) {
         updateActiveSearchState({
           results: createEmptyRuntimeFileSearchResult(),
-          resultOwner: createFileSearchResultOwner(activeWorktreeId, runtimeEnvironmentId, {
-            rootPath: worktreePath,
-            executionHostId
-          }),
+          resultOwner: createRuntimeFileSearchResultOwner(route, activeWorktreeId, worktreePath),
           loading: false
         })
         return
@@ -118,15 +104,15 @@ export function useFileSearchRunner({
       searchTimerRef.current = setTimeout(async () => {
         searchTimerRef.current = null
         // Results outlive navigation; clicks must retain the route that produced them.
-        const resultOwner = createFileSearchResultOwner(activeWorktreeId, runtimeEnvironmentId, {
-          rootPath: worktreePath,
-          executionHostId
-        })
+        const resultOwner = createRuntimeFileSearchResultOwner(
+          route,
+          activeWorktreeId,
+          worktreePath
+        )
         const controller = new AbortController()
         searchControllerRef.current = controller
         try {
           const state = useAppStore.getState()
-          const connectionId = getConnectionId(activeWorktreeId) ?? undefined
           const activeSearchState = state.fileSearchStateByWorktree[activeWorktreeId]
           if (
             getRuntimeFileSearchRejectedField({
@@ -145,12 +131,7 @@ export function useFileSearchRunner({
             return
           }
           const results = await searchRuntimeFiles(
-            {
-              target: runtimeTargetForOwnerEnvironment(runtimeEnvironmentId),
-              worktreeId: activeWorktreeId,
-              worktreePath,
-              connectionId
-            },
+            runtimeFileSearchTarget(route, activeWorktreeId, worktreePath),
             {
               query,
               rootPath: worktreePath,
@@ -190,14 +171,7 @@ export function useFileSearchRunner({
         }
       }, SEARCH_DEBOUNCE_MS)
     },
-    [
-      activeWorktreeId,
-      updateActiveSearchState,
-      worktreePath,
-      executionHostId,
-      runtimeEnvironmentId,
-      ownerIsTwin
-    ]
+    [activeWorktreeId, updateActiveSearchState, worktreePath, route, ownerIsTwin]
   )
 
   useEffect(

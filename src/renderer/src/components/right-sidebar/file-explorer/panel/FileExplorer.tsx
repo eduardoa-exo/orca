@@ -28,6 +28,9 @@ import { SearchFilters } from '../content-search/SearchFilters'
 import { SearchQueryRow } from '../content-search/SearchQueryRow'
 import { SearchResultsPane } from '../content-search/SearchResultsPane'
 import { useFileSearchPanel } from '../content-search/useFileSearchPanel'
+import { CodeSymbolQueryRow } from '../symbols/CodeSymbolQueryRow'
+import { CodeSymbolsPane } from '../symbols/CodeSymbolsPane'
+import { useCodeSymbolsPanel } from '../symbols/use-code-symbols-panel'
 import {
   getNameFilterCollapsedPathsAfterExpand,
   getNextNameFilterCollapsedPaths
@@ -86,6 +89,11 @@ function FileExplorerFiles(): React.JSX.Element {
   const rootChoice = resolveExplorerDisplayRootChoice(rootOptions, savedRoot)
   const rootNavigation = useFileExplorerRootNavigation(activeWorktreeId, rootChoice, rootOptions)
   const worktreePath = activeWorktree?.path ?? null
+  const symbolsPanel = useCodeSymbolsPanel({
+    worktreeId: activeWorktreeId,
+    worktreePath,
+    active: explorerView === 'symbols' && rightSidebarOpen
+  })
   const displayRootPath = getExplorerDisplayRootPath(worktreePath, rootChoice)
   const displayDepth = getExplorerDisplayDepth(worktreePath, displayRootPath)
   const isFilesViewActive = explorerView === 'files'
@@ -228,7 +236,7 @@ function FileExplorerFiles(): React.JSX.Element {
   if (!worktreePath) {
     return (
       <div className="flex h-full items-center justify-center text-[11px] text-muted-foreground px-4 text-center">
-        {explorerView === 'search'
+        {explorerView !== 'files'
           ? t('auto.components.right.sidebar.Search.98c8435e36', 'Select a workspace to search')
           : t(
               'auto.components.right.sidebar.FileExplorer.79b1537dd3',
@@ -304,6 +312,14 @@ function FileExplorerFiles(): React.JSX.Element {
             <div hidden={explorerView !== 'search'}>
               <SearchFilters key={activeWorktreeId} {...searchPanel.filtersProps} />
             </div>
+            <div hidden={explorerView !== 'symbols'}>
+              <CodeSymbolQueryRow
+                query={symbolsPanel.query}
+                loading={symbolsPanel.loading}
+                onQueryChange={symbolsPanel.setQuery}
+                onKeyDown={symbolsPanel.onQueryKeyDown}
+              />
+            </div>
           </div>
         </FileExplorerQueryStrip>
         {/* Layer Files/Contents in one body slot to retain heavy virtualized panes at full height. */}
@@ -347,6 +363,11 @@ function FileExplorerFiles(): React.JSX.Element {
               </div>
             )}
           </div>
+          {explorerView === 'symbols' && (
+            <div className="absolute inset-0 flex min-h-0 flex-col">
+              <CodeSymbolsPane panel={symbolsPanel} />
+            </div>
+          )}
         </div>
       </div>
 

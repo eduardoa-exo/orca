@@ -22695,6 +22695,18 @@
       "titleTrash": "Couldn't move '{{name}}' to the Trash. Delete it permanently?",
       "description": "This cannot be undone.",
       "confirm": "Delete Permanently"
+    },
+    "symbols": {
+      "viewLabel": "Symbols",
+      "viewAriaLabel": "Browse code symbols",
+      "searchWorkspace": "Search symbols in workspace",
+      "clearSearch": "Clear symbol search",
+      "invalidQuery": "Use letters, digits, underscores or dots to search symbols.",
+      "noResults": "No matching symbols in Python or XML files.",
+      "noFile": "Open a file to see its outline, or type to search the workspace.",
+      "unsupported": "Outline is available for Python and XML files. Type to search the workspace.",
+      "emptyOutline": "No symbols in this file.",
+      "truncated": "Results truncated. Refine your search."
     }
   },
   "sparsePreset": {

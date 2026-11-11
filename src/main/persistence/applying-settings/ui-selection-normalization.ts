@@ -83,7 +83,7 @@ export function normalizeRightSidebarExplorerView(
   view: unknown,
   tab?: unknown
 ): PersistedState['ui']['rightSidebarExplorerView'] {
-  if (view === 'files' || view === 'search') {
+  if (view === 'files' || view === 'search' || view === 'symbols') {
     return view
   }
   // Legacy Search tabs lack explorer view; explicit views still take precedence.
